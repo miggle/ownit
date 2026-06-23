@@ -4,7 +4,12 @@ import { getAuth } from 'firebase-admin/auth';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { setGlobalOptions } from 'firebase-functions/v2';
+import { defineSecret } from 'firebase-functions/params';
 import { sendRsvpEmails, sendSignInEmail } from './email.js';
+import { createIssue } from './github.js';
+
+// GitHub PAT (issues:write on miggle/ownit), held in this project's Secret Manager.
+const GITHUB_TOKEN = defineSecret('GITHUB_TOKEN');
 
 initializeApp();
 const db = getFirestore();
@@ -144,3 +149,35 @@ export const sendAdminSignInEmail = onCall<{ email?: unknown; continueUrl?: unkn
   await sendSignInEmail(email, link);
   return { success: true };
 });
+
+const MAX_IDEA_LEN = 5000;
+const MAX_NAME_LEN = 120;
+
+/**
+ * Public contribution form → a GitHub Issue on miggle/ownit, created with a
+ * server-side token (never exposed to the client). Validated and rate-limited
+ * on this public write path (brief §6).
+ */
+export const submitContribution = onCall<{ idea?: unknown; name?: unknown; email?: unknown }>(
+  { secrets: [GITHUB_TOKEN] },
+  async (request) => {
+    const d = request.data ?? {};
+    const idea = typeof d.idea === 'string' ? d.idea.trim().slice(0, MAX_IDEA_LEN) : '';
+    const name = typeof d.name === 'string' ? d.name.trim().slice(0, MAX_NAME_LEN) : '';
+    const email = typeof d.email === 'string' ? d.email.trim() : '';
+    if (idea.length < 5) throw new HttpsError('invalid-argument', 'Please share a bit more detail.');
+    if (email && !isEmailShape(email)) throw new HttpsError('invalid-argument', 'That email looks invalid.');
+
+    const ip = request.rawRequest.ip ?? 'unknown';
+    await enforceRateLimit(email || 'contrib', ip);
+
+    // First line (capped) becomes the issue title; full idea + attribution the body.
+    const firstLine = idea.split('\n')[0].slice(0, 80);
+    const title = `Contribution: ${firstLine}${firstLine.length < idea.split('\n')[0].length ? '…' : ''}`;
+    const attribution = name || email ? `\n\n— ${[name, email].filter(Boolean).join(' · ')}` : '\n\n— (submitted anonymously)';
+    const body = `${idea}${attribution}\n\n_Submitted via the OwnIt site contribution form._`;
+
+    const issue = await createIssue(GITHUB_TOKEN.value(), { title, body });
+    return { status: 'ok' as const, issue: issue.number };
+  },
+);

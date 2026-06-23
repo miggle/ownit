@@ -257,6 +257,8 @@ export const contribute = {
   subheading: 'This workflow gets better the more people poke at it.',
   intro: 'Spotted something wrong, got a sharper approach, or want to suggest an addition? Send it over.',
   success: { title: 'Got it, thank you.', body: 'I read every one.' },
+  error: 'Something went wrong sending that. Please try again, or email info@miggle.one.',
+  submitting: 'Sending…',
   fields: {
     idea: 'Your idea or suggestion',
     name: 'Name (optional)',
