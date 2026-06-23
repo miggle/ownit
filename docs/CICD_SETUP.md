@@ -4,10 +4,10 @@ Four workflows in `.github/workflows/`, modelled on the endgame project:
 
 | Workflow | Trigger | Does |
 | --- | --- | --- |
-| `firebase-hosting-merge.yml` | push to `master` | build + deploy hosting to the **live** channel |
-| `firebase-hosting-pull-request.yml` | PR to `master` | build + deploy to a **preview** channel, comments the URL on the PR |
-| `functions.yml` | push to `master` touching `functions/**`, rules, indexes, or `firebase.json` | deploy functions + Firestore rules + indexes |
-| `tests.yml` | push / PR to `master` | lint + build the web app and the functions |
+| `firebase-hosting-merge.yml` | push to `main` | build + deploy hosting to the **live** channel |
+| `firebase-hosting-pull-request.yml` | PR to `main` | build + deploy to a **preview** channel, comments the URL on the PR |
+| `functions.yml` | push to `main` touching `functions/**`, rules, indexes, or `firebase.json` | deploy functions + Firestore rules + indexes |
+| `tests.yml` | push / PR to `main` | lint + build the web app and the functions |
 
 ## Required GitHub repository secrets
 

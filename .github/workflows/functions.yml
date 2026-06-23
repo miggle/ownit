@@ -3,7 +3,7 @@ name: Deploy Firebase Functions and Firestore
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - 'functions/**'
       - 'firestore.rules'

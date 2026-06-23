@@ -3,7 +3,7 @@ name: Preview Channel Deploy on PR
 on:
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
   build_and_preview:
