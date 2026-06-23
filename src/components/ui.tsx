@@ -1,5 +1,13 @@
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { CALENDLY_URL } from '../lib/site';
+
+/** Renders an image that simply hides itself if the file isn't present yet. */
+export function AssetImg({ src, alt, className = '' }: { src: string; alt: string; className?: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return null;
+  return <img src={src} alt={alt} className={className} onError={() => setFailed(true)} loading="lazy" />;
+}
 
 export function Container({ children, className = '' }: { children: ReactNode; className?: string }) {
   return <div className={`mx-auto w-full max-w-[1180px] px-6 ${className}`}>{children}</div>;
