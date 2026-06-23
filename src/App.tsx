@@ -1,33 +1,24 @@
-import { Header } from './components/Header';
-import { Footer } from './components/Footer';
-import { Hero } from './sections/Hero';
-import { Idea } from './sections/Idea';
-import { Covers } from './sections/Covers';
-import { BuiltToLast } from './sections/BuiltToLast';
-import { HowIBuild } from './sections/HowIBuild';
-import { Tools } from './sections/Tools';
-import { Meetup } from './sections/Meetup';
-import { WorkTogether } from './sections/WorkTogether';
-import { Contribute } from './sections/Contribute';
-import { About } from './sections/About';
+import { lazy, Suspense } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Home } from './pages/Home';
+
+// Admin is split out so the public homepage doesn't ship the auth + admin code.
+const Admin = lazy(() => import('./pages/Admin').then((m) => ({ default: m.Admin })));
 
 export default function App() {
   return (
-    <>
-      <Header />
-      <main>
-        <Hero />
-        <Idea />
-        <Covers />
-        <BuiltToLast />
-        <HowIBuild />
-        <Tools />
-        <Meetup />
-        <WorkTogether />
-        <Contribute />
-        <About />
-      </main>
-      <Footer />
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route
+          path="/admin"
+          element={
+            <Suspense fallback={<div className="min-h-screen bg-navy-900" />}>
+              <Admin />
+            </Suspense>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }

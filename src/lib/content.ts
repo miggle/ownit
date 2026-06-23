@@ -206,6 +206,7 @@ export const meetup = {
   heading: 'A relaxed, regular local get-together.',
   intro:
     'Bring an idea, a half-finished project, or just questions. We talk through the workflow, share what’s working and improve it together.',
+  seedLabel: 'Upcoming session',
   emptyState: {
     label: 'Next date coming',
     title: 'No date set just yet.',
@@ -214,18 +215,13 @@ export const meetup = {
   moreSessions: 'More sessions will be listed here as they’re confirmed.',
 };
 
-// Seed session (brief §7 confirmed first session). Will move to Firestore in M2.
-export const seedSession = {
-  status: 'Confirmed',
-  label: 'Upcoming session',
-  title: 'OwnIt meetup · Session 01',
-  when: 'Monday 1 September 2026, 7:00pm',
-  where: 'BN6 Craft and Tap, Hassocks',
-};
-
 export const rsvpForm = {
   heading: 'Register your interest',
   success: { title: 'Thanks, you’re on the list.', body: 'Check your inbox for a confirmation. It’s an informal session. Come with whatever you’re building and we’ll dig in together.' },
+  duplicate: 'Looks like you’re already registered for this one. See you there.',
+  waitlist: 'This one’s full, so you’re on the waitlist. I’ll be in touch if a space opens up.',
+  error: 'Something went wrong saving that. Please try again, or email info@miggle.one.',
+  submitting: 'Saving…',
   fields: {
     name: 'Name',
     email: 'Email',

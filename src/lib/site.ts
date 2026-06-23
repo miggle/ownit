@@ -7,7 +7,7 @@ export const PHONE = '+44 (0) 7748 188012';
 // Brand assets — drop the files into public/ at these paths (see the README.txt
 // in each folder). They render once present and stay hidden if missing.
 export const ASSETS = {
-  miggleLogo: '/brand/miggle-logo.svg',
+  miggleLogo: '/brand/miggle-logo.png',
   alickPhoto: '/about/alick.jpg',
 };
 
