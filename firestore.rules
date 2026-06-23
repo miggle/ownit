@@ -1,0 +1,40 @@
+rules_version = '2';
+
+// Deny-by-default. The public site never writes to Firestore directly: RSVPs and
+// contributions go through Cloud Functions (admin SDK, which bypasses these rules)
+// so we can validate, dedupe and rate-limit server-side (brief §6, NFR standards).
+//
+// Admin access is gated on a custom claim `admin: true`, set on Alick's account
+// only (see functions/ setAdmin script in M2). This is what makes the authed
+// admin view's "owner-only" reads actually enforced rather than cosmetic.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    // Meetup sessions: world-readable (the site lists them); only admin writes.
+    match /meetupSessions/{sessionId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // RSVPs: never client-readable or client-writable. Written by the Function,
+    // read only by the admin view.
+    match /meetupRsvps/{rsvpId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Rate-limit bookkeeping written only by Functions.
+    match /rateLimits/{docId} {
+      allow read, write: if false;
+    }
+
+    // Everything else: denied.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
