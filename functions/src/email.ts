@@ -24,9 +24,12 @@ export interface RsvpEmailData {
   waitlisted: boolean;
 }
 
+// Sentinel used until real SMTP creds are provided — keeps email in log-only mode.
+const PLACEHOLDER = 'PLACEHOLDER';
+
 function transport() {
   const host = SMTP_HOST.value();
-  if (!host) return null; // not configured (e.g. local emulator) → log only
+  if (!host || host === PLACEHOLDER) return null; // not configured → log only
   return nodemailer.createTransport({
     host,
     port: Number(SMTP_PORT.value() || 587),

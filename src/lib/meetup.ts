@@ -1,11 +1,4 @@
-import {
-  collection,
-  getDocs,
-  query,
-  orderBy,
-  where,
-  Timestamp,
-} from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from './firebase';
 
 export type SessionStatus = 'upcoming' | 'full' | 'past';
@@ -27,13 +20,12 @@ export interface MeetupSession {
 
 export const MEETUP_SESSIONS = 'meetupSessions';
 
-/** Upcoming/full sessions, soonest first. Empty array => show the empty state. */
+/** Upcoming/full sessions, soonest first. Empty array => show the empty state.
+ * Ordered server-side (single-field index, auto-created); status is filtered
+ * client-side to avoid needing a composite index for a tiny collection. */
 export async function fetchUpcomingSessions(): Promise<MeetupSession[]> {
-  const q = query(
-    collection(db, MEETUP_SESSIONS),
-    where('status', 'in', ['upcoming', 'full']),
-    orderBy('startsAt', 'asc'),
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<MeetupSession, 'id'>) }));
+  const snap = await getDocs(query(collection(db, MEETUP_SESSIONS), orderBy('startsAt', 'asc')));
+  return snap.docs
+    .map((d) => ({ id: d.id, ...(d.data() as Omit<MeetupSession, 'id'>) }))
+    .filter((s) => s.status === 'upcoming' || s.status === 'full');
 }

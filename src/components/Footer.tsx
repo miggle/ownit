@@ -1,6 +1,6 @@
-import { Container, AssetImg } from './ui';
+import { Container } from './ui';
 import { footer } from '../lib/content';
-import { MIGGLE_URL, PHONE, ASSETS, contactEmail, openMail } from '../lib/site';
+import { MIGGLE_URL, PHONE, contactEmail, openMail } from '../lib/site';
 
 export function Footer() {
   return (
@@ -12,10 +12,6 @@ export function Footer() {
               Own<span className="text-teal-bright">It</span>
             </div>
             <p className="mt-2 max-w-xs text-[15px] text-paper-2/60">{footer.tagline}</p>
-            <a href={MIGGLE_URL} target="_blank" rel="noopener" className="mt-5 inline-flex items-center gap-2 text-[13px] text-paper-2/50 transition-colors hover:text-paper-2/80">
-              <span>Part of</span>
-              <AssetImg src={ASSETS.miggleLogo} alt="Miggle" className="h-5 w-auto opacity-80" />
-            </a>
           </div>
           <div>
             <div className="font-mono text-[12px] uppercase tracking-[0.08em] text-slate-400">Contact</div>

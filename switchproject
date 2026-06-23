@@ -1,0 +1,87 @@
+#!/bin/bash
+set -euo pipefail
+
+PROJECT_ID="ownit-afc0f"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+DEV_PORT="${ENDGAME_DEV_PORT:-5173}"
+ADC_FILE="${HOME}/.config/gcloud/application_default_credentials.json"
+
+cd "$SCRIPT_DIR"
+
+# Source nvm if it exists
+if [ -s "$HOME/.nvm/nvm.sh" ]; then
+  # shellcheck source=/dev/null
+  source "$HOME/.nvm/nvm.sh"
+  nvm use 24
+elif [ -s "${NVM_DIR:-}/nvm.sh" ]; then
+  # shellcheck source=/dev/null
+  source "$NVM_DIR/nvm.sh"
+  nvm use 24
+fi
+
+if ! gcloud auth list --filter=status:ACTIVE --format="value(account)" | grep -q .; then
+  echo "Not logged into gcloud. Please run: gcloud auth login"
+  exit 1
+fi
+
+CURRENT_PROJECT="$(gcloud config get-value project 2>/dev/null || true)"
+if [ "$CURRENT_PROJECT" != "$PROJECT_ID" ]; then
+  echo "Setting gcloud project: ${CURRENT_PROJECT:-<unset>} -> $PROJECT_ID"
+  gcloud config set project "$PROJECT_ID"
+else
+  echo "gcloud project: $PROJECT_ID"
+fi
+
+if ! gcloud auth application-default print-access-token >/dev/null 2>&1; then
+  echo "No Application Default Credentials. Run: gcloud auth application-default login"
+  exit 1
+fi
+
+CURRENT_QUOTA=""
+if [ -f "$ADC_FILE" ]; then
+  CURRENT_QUOTA="$(python3 -c "import json; print(json.load(open('$ADC_FILE')).get('quota_project_id') or '')" 2>/dev/null || true)"
+fi
+if [ "$CURRENT_QUOTA" != "$PROJECT_ID" ]; then
+  echo "Setting ADC quota project: ${CURRENT_QUOTA:-<unset>} -> $PROJECT_ID"
+  gcloud auth application-default set-quota-project "$PROJECT_ID" >/dev/null 2>&1
+else
+  echo "ADC quota project: $PROJECT_ID"
+fi
+
+if command -v firebase >/dev/null 2>&1; then
+  firebase use "$PROJECT_ID" >/dev/null
+  echo "firebase use: $PROJECT_ID"
+fi
+
+# Only match processes LISTENing on the port (not browser connections to localhost).
+listener_pid() {
+  lsof -nP -iTCP:"$DEV_PORT" -sTCP:LISTEN -t 2>/dev/null | head -1
+}
+
+dev_server_pid_for_project() {
+  local pid cwd
+  pid="$(listener_pid)"
+  [ -n "$pid" ] || return 1
+  cwd="$(lsof -a -p "$pid" -d cwd -Fn 2>/dev/null | grep '^n' | cut -c2- || true)"
+  if [ "$cwd" = "$SCRIPT_DIR" ]; then
+    echo "$pid"
+    return 0
+  fi
+  return 1
+}
+
+if OTHER_PID="$(listener_pid)" && [ -n "$OTHER_PID" ] && ! dev_server_pid_for_project >/dev/null; then
+  OTHER_CMD="$(ps -p "$OTHER_PID" -o command= 2>/dev/null || echo "unknown process")"
+  echo ""
+  echo "Port $DEV_PORT is in use by another process (not this repo):"
+  echo "  $OTHER_CMD"
+  echo "Stop that server or run: ENDGAME_DEV_PORT=5174 ./switchproject"
+  exit 1
+fi
+
+if dev_server_pid_for_project >/dev/null; then
+  echo "Dev server already running for endgame on http://localhost:$DEV_PORT"
+else
+  echo "Starting dev server on http://localhost:$DEV_PORT ..."
+  npm run dev -- --port "$DEV_PORT" --strictPort
+fi
