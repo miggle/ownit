@@ -12,12 +12,12 @@
     "deploy": "firebase deploy --only functions"
   },
   "dependencies": {
+    "@aws-sdk/client-ses": "^3.1075.0",
+    "@google-cloud/secret-manager": "^6.2.0",
     "firebase-admin": "^13.0.0",
-    "firebase-functions": "^6.0.0",
-    "nodemailer": "^9.0.1"
+    "firebase-functions": "^6.0.0"
   },
   "devDependencies": {
-    "@types/nodemailer": "^8.0.1",
     "typescript": "^5.7.0"
   },
   "private": true

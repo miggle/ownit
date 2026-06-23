@@ -1,9 +1,10 @@
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { setGlobalOptions } from 'firebase-functions/v2';
-import { sendRsvpEmails, EMAIL_SECRETS } from './email.js';
+import { sendRsvpEmails, sendSignInEmail } from './email.js';
 
 initializeApp();
 const db = getFirestore();
@@ -112,7 +113,7 @@ async function enforceRateLimit(email: string, ip: string) {
 }
 
 /** On each RSVP, send the registrant a confirmation and (optionally) notify Alick. */
-export const onRsvpCreated = onDocumentCreated({ document: 'meetupRsvps/{rsvpId}', secrets: EMAIL_SECRETS }, async (event) => {
+export const onRsvpCreated = onDocumentCreated('meetupRsvps/{rsvpId}', async (event) => {
   const rsvp = event.data?.data();
   if (!rsvp) return;
   await sendRsvpEmails({
@@ -123,4 +124,23 @@ export const onRsvpCreated = onDocumentCreated({ document: 'meetupRsvps/{rsvpId}
     whatBuilding: rsvp.whatBuilding ?? '',
     waitlisted: rsvp.waitlisted ?? false,
   });
+});
+
+const isEmailShape = (s: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+
+/**
+ * Magic-link sign-in for the /admin area. Generates a Firebase email sign-in
+ * link server-side and sends it via SES. Anyone can request a link, but only an
+ * account carrying the `admin` custom claim can actually use the admin views
+ * (enforced by Firestore rules + the client guard), so this is safe to leave open.
+ */
+export const sendAdminSignInEmail = onCall<{ email?: unknown; continueUrl?: unknown }>(async (request) => {
+  const email = typeof request.data?.email === 'string' ? request.data.email.trim().toLowerCase() : '';
+  const continueUrl = typeof request.data?.continueUrl === 'string' ? request.data.continueUrl : '';
+  if (!isEmailShape(email)) throw new HttpsError('invalid-argument', 'A valid email is required.');
+  if (!continueUrl) throw new HttpsError('invalid-argument', 'A continue URL is required.');
+
+  const link = await getAuth().generateSignInWithEmailLink(email, { url: continueUrl, handleCodeInApp: true });
+  await sendSignInEmail(email, link);
+  return { success: true };
 });

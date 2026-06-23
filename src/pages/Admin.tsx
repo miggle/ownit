@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useAuth, signInWithGoogle, signOut } from '../lib/auth';
+import { useAuth, requestSignInEmail, completeSignInFromLink, urlIsSignInLink, signOut } from '../lib/auth';
 import {
   fetchAllSessions,
   createSession,
@@ -27,18 +27,26 @@ const emptyDraft: SessionDraft = {
 
 export function Admin() {
   const { user, isAdmin, loading } = useAuth();
+  const [completing, setCompleting] = useState(urlIsSignInLink());
+  const [needEmail, setNeedEmail] = useState(false);
+  const [linkError, setLinkError] = useState(false);
 
+  // If we arrived via a magic link, finish the sign-in.
+  useEffect(() => {
+    if (!urlIsSignInLink()) return;
+    completeSignInFromLink()
+      .then((r) => {
+        if (r === 'need-email') setNeedEmail(true);
+      })
+      .catch(() => setLinkError(true))
+      .finally(() => setCompleting(false));
+  }, []);
+
+  if (completing) return <Centered>Completing sign-in…</Centered>;
+  if (needEmail) return <CompleteWithEmail onError={() => setLinkError(true)} />;
   if (loading) return <Centered>Checking sign-in…</Centered>;
 
-  if (!user) {
-    return (
-      <Centered>
-        <h1 className="font-display text-[28px] font-bold text-white">OwnIt admin</h1>
-        <p className="mt-2 text-paper-2/70">Sign in to manage meetup sessions and RSVPs.</p>
-        <button onClick={() => signInWithGoogle()} className={`mt-6 ${btn}`}>Sign in with Google</button>
-      </Centered>
-    );
-  }
+  if (!user) return <SignIn linkError={linkError} />;
 
   if (!isAdmin) {
     return (
@@ -59,6 +67,86 @@ export function Admin() {
 function Centered({ children }: { children: React.ReactNode }) {
   return (
     <div className={`${shell} flex flex-col items-center justify-center px-6 text-center`}>{children}</div>
+  );
+}
+
+function SignIn({ linkError }: { linkError: boolean }) {
+  const [email, setEmail] = useState('');
+  const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setState('sending');
+    try {
+      await requestSignInEmail(email);
+      setState('sent');
+    } catch {
+      setState('error');
+    }
+  };
+
+  if (state === 'sent') {
+    return (
+      <Centered>
+        <h1 className="font-display text-[24px] font-bold text-white">Check your inbox</h1>
+        <p className="mt-2 max-w-md text-paper-2/70">
+          If {email} can access the admin, a sign-in link is on its way. Open it on this device to continue.
+        </p>
+      </Centered>
+    );
+  }
+
+  return (
+    <Centered>
+      <h1 className="font-display text-[28px] font-bold text-white">OwnIt admin</h1>
+      <p className="mt-2 text-paper-2/70">Enter your email and I’ll send you a sign-in link.</p>
+      {linkError && <p className="mt-3 text-[14px] text-pink-light">That sign-in link didn’t work. Request a fresh one.</p>}
+      <form onSubmit={submit} className="mt-6 flex w-full max-w-sm flex-col gap-3">
+        <input
+          type="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@miggle.one"
+          className={input}
+        />
+        <button type="submit" disabled={state === 'sending'} className={`${btn} disabled:opacity-60`}>
+          {state === 'sending' ? 'Sending…' : 'Email me a sign-in link'}
+        </button>
+        {state === 'error' && <p className="text-[14px] text-pink-light">Couldn’t send that. Please try again.</p>}
+      </form>
+    </Centered>
+  );
+}
+
+/** Magic link opened on a device without the stored email — ask for it. */
+function CompleteWithEmail({ onError }: { onError: () => void }) {
+  const [email, setEmail] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      await completeSignInFromLink(email);
+      window.location.reload();
+    } catch {
+      onError();
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Centered>
+      <h1 className="font-display text-[24px] font-bold text-white">Confirm your email</h1>
+      <p className="mt-2 max-w-md text-paper-2/70">To finish signing in, enter the email you requested the link with.</p>
+      <form onSubmit={submit} className="mt-6 flex w-full max-w-sm flex-col gap-3">
+        <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@miggle.one" className={input} />
+        <button type="submit" disabled={busy} className={`${btn} disabled:opacity-60`}>
+          {busy ? 'Signing in…' : 'Complete sign-in'}
+        </button>
+      </form>
+    </Centered>
   );
 }
 
