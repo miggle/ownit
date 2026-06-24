@@ -1,5 +1,9 @@
 name: Deploy Firebase Functions and Firestore
 
+# NOTE: currently fails on push because the CI deploy service account lacks
+# Gen 2 functions roles (cloudfunctions.admin, run.admin, datastore.indexAdmin,
+# secretmanager.admin, iam.serviceAccountUser). Left enabled on purpose as a
+# reminder to grant those roles; functions are deployed manually until then.
 on:
   push:
     branches:

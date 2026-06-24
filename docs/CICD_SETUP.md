@@ -6,7 +6,7 @@ Four workflows in `.github/workflows/`, modelled on the endgame project:
 | --- | --- | --- |
 | `firebase-hosting-merge.yml` | push to `main` | build + deploy hosting to the **live** channel |
 | `firebase-hosting-pull-request.yml` | PR to `main` | build + deploy to a **preview** channel, comments the URL on the PR |
-| `functions.yml` | push to `main` touching `functions/**`, rules, indexes, or `firebase.json` | deploy functions + Firestore rules + indexes |
+| `functions.yml` | push to `main` touching `functions/**`, rules, indexes, or `firebase.json` | deploy functions + Firestore rules + indexes. **Currently fails** until the deploy SA gets Gen 2 roles (see note below); left on so it nags. Functions deployed manually meanwhile. |
 | `tests.yml` | push / PR to `main` | lint + build the web app and the functions |
 
 ## Required GitHub repository secrets
