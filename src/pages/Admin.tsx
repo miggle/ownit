@@ -53,8 +53,7 @@ export function Admin() {
       <Centered>
         <h1 className="font-display text-[24px] font-bold text-white">Not authorised</h1>
         <p className="mt-2 max-w-md text-paper-2/70">
-          {user.email} doesn’t have admin access. Grant it with{' '}
-          <code className="rounded bg-navy-700 px-1.5 py-0.5 font-mono text-[13px]">scripts/set-admin.mjs</code>, then sign out and in again.
+          {user.email} doesn’t have admin access. If you think it should, contact the site owner.
         </p>
         <button onClick={() => signOut()} className="mt-6 text-teal-bright hover:underline">Sign out</button>
       </Centered>
