@@ -27,20 +27,35 @@ const emptyDraft: SessionDraft = {
 
 export function Admin() {
   const { user, isAdmin, loading } = useAuth();
+  // Computed synchronously on first render so the form never flashes before we
+  // know we're mid-sign-in (the endgame pattern).
   const [completing, setCompleting] = useState(urlIsSignInLink());
   const [needEmail, setNeedEmail] = useState(false);
   const [linkError, setLinkError] = useState(false);
 
-  // If we arrived via a magic link, finish the sign-in.
+  // If we arrived via a magic link, finish the sign-in. On success we do NOT
+  // drop the gate here — onAuthStateChanged hasn't populated `user` yet, and
+  // dropping it now would flash the sign-in form for one render. The effect
+  // below clears it once `user` actually arrives.
   useEffect(() => {
     if (!urlIsSignInLink()) return;
     completeSignInFromLink()
       .then((r) => {
-        if (r === 'need-email') setNeedEmail(true);
+        if (r === 'need-email') {
+          setNeedEmail(true);
+          setCompleting(false);
+        }
       })
-      .catch(() => setLinkError(true))
-      .finally(() => setCompleting(false));
+      .catch(() => {
+        setLinkError(true);
+        setCompleting(false);
+      });
   }, []);
+
+  // Drop the magic-link gate only once auth reflects the signed-in user.
+  useEffect(() => {
+    if (user) setCompleting(false);
+  }, [user]);
 
   if (completing) return <Centered>Completing sign-in…</Centered>;
   if (needEmail) return <CompleteWithEmail onError={() => setLinkError(true)} />;
