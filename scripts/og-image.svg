@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" font-family="'Helvetica Neue', Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f2334"/>
+      <stop offset="1" stop-color="#11242f"/>
+    </linearGradient>
+    <radialGradient id="glowT" cx="0.85" cy="0.1" r="0.5">
+      <stop offset="0" stop-color="#0f8576" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#0f8576" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowM" cx="0.05" cy="0.95" r="0.5">
+      <stop offset="0" stop-color="#e6356e" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#e6356e" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glowT)"/>
+  <rect width="1200" height="630" fill="url(#glowM)"/>
+
+  <!-- eyebrow -->
+  <text x="80" y="150" fill="#9fe8dd" font-size="26" letter-spacing="3" font-family="'Courier New', monospace">PROTOTYPE ANYWHERE · OWN IT WHEN IT'S REAL</text>
+
+  <!-- wordmark -->
+  <text x="80" y="120" font-size="44" font-weight="700" fill="#ffffff">Own<tspan fill="#3bbfb3">It</tspan></text>
+
+  <!-- headline -->
+  <text x="80" y="300" font-size="76" font-weight="800" fill="#ffffff">Build AI products</text>
+  <text x="80" y="390" font-size="76" font-weight="800" fill="#ffffff">you actually <tspan fill="#3bbfb3">own</tspan>.</text>
+
+  <!-- subhead -->
+  <text x="82" y="470" font-size="30" fill="#c7d2d9">The step after Lovable or Replit: secure, scalable,</text>
+  <text x="82" y="512" font-size="30" fill="#c7d2d9">and properly yours.</text>
+
+  <!-- footer -->
+  <text x="80" y="585" font-size="24" fill="#7a8890">ownit.miggle.co</text>
+  <text x="1120" y="585" font-size="24" fill="#7a8890" text-anchor="end">part of miggle.one</text>
+</svg>

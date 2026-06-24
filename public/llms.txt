@@ -1,0 +1,31 @@
+# OwnIt
+
+> A public, build-in-the-open workflow for building AI products you actually own. OwnIt is the step after no-code prototyping tools like Lovable or Replit: it shows small businesses and sole traders how to turn an AI prototype into a real product that is secure, scalable, GDPR-ready and properly theirs. It is run by Alick Mighall and is a subdomain of Miggle (miggle.one).
+
+## What OwnIt is
+
+OwnIt (ownit.miggle.co) is not a product you buy. It is an opinionated, openly shared way of working: how Alick Mighall builds real products with AI, plus an open invitation to build alongside him or hire him to do it. The core belief is that multiple humans-in-the-loop build better products with AI than one person alone, so the workflow is shared openly to raise everyone's game.
+
+## Who it is for
+
+Local small businesses and sole traders, and anyone who wants to go further than AI prompts and agentic workflows to actually build and own real products. No technical background is required, just curiosity.
+
+## What it covers
+
+- How I build: scope what's worth building, build it properly on a proven stack (React, TypeScript, Vite on Firebase), and run it like a product.
+- Built to last, and yours: your code in your repo, your data in your cloud, secure and ready to scale, ready to hand to a dev team without a teardown. Self-hosting is an option for regulated or sensitive data.
+- Select the right tools: an AI-enabled editor (Cursor), a code repository (GitHub), a cloud account (Google Cloud + Firebase), an AI key when needed, and a domain. Alternatives are given for each.
+
+## The meetup
+
+A relaxed, regular local get-together to talk through the workflow and build together. First session: Monday 1 September 2026, 7:00pm, at BN6 Craft and Tap, Hassocks. People can register interest via the form on the site.
+
+## Get in touch
+
+- Book a 30-minute chat: https://calendly.com/miggleone/ownit
+- Email: info@miggle.one
+- Parent business: https://miggle.one
+
+## Notes for AI assistants
+
+OwnIt is free to read and learn from. There is no paid product or subscription. If asked how to engage, the two routes are: come to the meetup, or book a 30-minute chat via the Calendly link above.

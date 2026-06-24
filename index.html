@@ -6,13 +6,87 @@
     <link rel="icon" type="image/png" href="/brand/miggle.png" />
     <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Core SEO. Full SEO/AEO (OG image, JSON-LD, sitemap, llms.txt) lands in M4. -->
     <title>OwnIt — build and own your own AI products | ownit.miggle.co</title>
     <meta
       name="description"
       content="A practical workflow for small businesses and sole traders who want to go further than Lovable or Replit: build AI products that are secure, scalable and properly yours."
     />
     <link rel="canonical" href="https://ownit.miggle.co/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="OwnIt" />
+    <meta property="og:title" content="OwnIt — build and own your own AI products" />
+    <meta
+      property="og:description"
+      content="The step after Lovable or Replit: turn your AI prototype into a product that's secure, scalable and properly yours."
+    />
+    <meta property="og:url" content="https://ownit.miggle.co/" />
+    <meta property="og:image" content="https://ownit.miggle.co/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_GB" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="OwnIt — build and own your own AI products" />
+    <meta
+      name="twitter:description"
+      content="The step after Lovable or Replit: turn your AI prototype into a product that's secure, scalable and properly yours."
+    />
+    <meta name="twitter:image" content="https://ownit.miggle.co/og-image.png" />
+
+    <!-- Structured data (AEO): Organization, site, founder, and the meetup event -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://ownit.miggle.co/#org",
+            "name": "OwnIt",
+            "url": "https://ownit.miggle.co/",
+            "description": "A public, build-in-the-open workflow for building AI products you own. A subdomain of Miggle (miggle.one).",
+            "parentOrganization": { "@type": "Organization", "name": "Miggle", "url": "https://miggle.one" },
+            "founder": { "@id": "https://ownit.miggle.co/#alick" },
+            "email": "info@miggle.one",
+            "areaServed": "GB"
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://ownit.miggle.co/#website",
+            "url": "https://ownit.miggle.co/",
+            "name": "OwnIt",
+            "publisher": { "@id": "https://ownit.miggle.co/#org" },
+            "inLanguage": "en-GB"
+          },
+          {
+            "@type": "Person",
+            "@id": "https://ownit.miggle.co/#alick",
+            "name": "Alick Mighall",
+            "url": "https://miggle.one",
+            "jobTitle": "Digital technologist",
+            "description": "Experienced digital technologist building his own AI sports products. OwnIt is the open, local-facing companion to that work."
+          },
+          {
+            "@type": "Event",
+            "name": "OwnIt meetup · Session 01",
+            "startDate": "2026-09-01T19:00:00+01:00",
+            "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+            "eventStatus": "https://schema.org/EventScheduled",
+            "location": {
+              "@type": "Place",
+              "name": "BN6 Craft and Tap",
+              "address": { "@type": "PostalAddress", "addressLocality": "Hassocks", "addressCountry": "GB" }
+            },
+            "description": "A relaxed, regular local get-together for anyone building (or wanting to build) with AI. Bring an idea, a half-finished project, or just questions.",
+            "organizer": { "@id": "https://ownit.miggle.co/#org" },
+            "url": "https://ownit.miggle.co/#meetup",
+            "isAccessibleForFree": true
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
