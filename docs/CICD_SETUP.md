@@ -1,22 +1,24 @@
 # CI/CD setup (GitHub Actions → Firebase)
 
-Four workflows in `.github/workflows/`, modelled on the endgame project:
+Auth is **keyless** via Workload Identity Federation (WIF): GitHub Actions exchanges
+its OIDC token for short-lived GCP credentials. There are **no service-account keys**
+anywhere — nothing to leak, store, or rotate.
+
+Four workflows in `.github/workflows/`:
 
 | Workflow | Trigger | Does |
 | --- | --- | --- |
-| `firebase-hosting-merge.yml` | push to `main` | build + deploy hosting to the **live** channel |
-| `firebase-hosting-pull-request.yml` | PR to `main` | build + deploy to a **preview** channel, comments the URL on the PR |
-| `functions.yml` | push to `main` touching `functions/**`, rules, indexes, or `firebase.json` | deploy functions + Firestore rules + indexes. **Currently fails** until the deploy SA gets Gen 2 roles (see note below); left on so it nags. Functions deployed manually meanwhile. |
-| `tests.yml` | push / PR to `main` | lint + build the web app and the functions |
+| `firebase-hosting-merge.yml` | push to `main` | build + deploy hosting (live) |
+| `firebase-hosting-pull-request.yml` | PR to `main` | deploy a preview channel, comment the URL |
+| `functions.yml` | push to `main` touching `functions/**`, rules, indexes, or `firebase.json` | deploy functions + Firestore rules + indexes |
+| `tests.yml` | push / PR to `main` | lint + build web and functions |
 
-## Required GitHub repository secrets
+## Required GitHub secrets
 
-Add these under **Settings → Secrets and variables → Actions**:
+Only the **public** Firebase web config (used at build time). No auth secret.
 
 | Secret | Value |
 | --- | --- |
-| `FIREBASE_SERVICE_ACCOUNT` | JSON key for a deploy service account (see below) |
-| `FIREBASE_PROJECT_ID` | `ownit-afc0f` |
 | `VITE_FIREBASE_API_KEY` | from the web app config |
 | `VITE_FIREBASE_AUTH_DOMAIN` | `ownit-afc0f.firebaseapp.com` |
 | `VITE_FIREBASE_PROJECT_ID` | `ownit-afc0f` |
@@ -24,35 +26,47 @@ Add these under **Settings → Secrets and variables → Actions**:
 | `VITE_FIREBASE_MESSAGING_SENDER_ID` | `804316033885` |
 | `VITE_FIREBASE_APP_ID` | `1:804316033885:web:0994f6abd6dc71c9cbeeb4` |
 
-(The `VITE_*` values are public web config, not secrets — they're kept as Actions
-secrets only to mirror the endgame setup and keep the workflow tidy.)
+The old `FIREBASE_SERVICE_ACCOUNT` / `FIREBASE_PROJECT_ID` secrets are no longer used and can be deleted.
 
-## Deploy service account
+## How the keyless auth is wired
 
-Easiest: run once locally and let Firebase create the SA + add the
-`FIREBASE_SERVICE_ACCOUNT` secret automatically:
+Workflows authenticate with `google-github-actions/auth@v2` using a WIF provider
+and a dedicated deploy service account (`ownit-deployer@ownit-afc0f.iam.gserviceaccount.com`),
+both referenced inline in the YAML (neither value is secret). Each deploy job sets
+`permissions: id-token: write`.
 
-```bash
-firebase init hosting:github
-```
-
-Or create it manually with the roles a Gen 2 deploy needs:
+### The GCP setup behind it (already done; recorded for reproducibility)
 
 ```bash
-SA=ownit-deployer
-gcloud iam service-accounts create $SA --project ownit-afc0f --display-name "OwnIt CI deployer"
-EMAIL=$SA@ownit-afc0f.iam.gserviceaccount.com
-for role in roles/firebasehosting.admin roles/cloudfunctions.admin \
-  roles/firebaserules.admin roles/datastore.indexAdmin \
-  roles/run.admin roles/iam.serviceAccountUser roles/artifactregistry.admin \
-  roles/serviceusage.serviceUsageConsumer; do
-  gcloud projects add-iam-policy-binding ownit-afc0f --member="serviceAccount:$EMAIL" --role="$role"
-done
-gcloud iam service-accounts keys create key.json --iam-account "$EMAIL"
-# paste key.json contents into the FIREBASE_SERVICE_ACCOUNT secret, then delete it
-rm key.json
+PROJECT=ownit-afc0f; NUM=804316033885
+SA=ownit-deployer@$PROJECT.iam.gserviceaccount.com
+REPO=miggle/ownit
+
+gcloud services enable iam.googleapis.com sts.googleapis.com iamcredentials.googleapis.com --project $PROJECT
+
+# Pool + GitHub OIDC provider, restricted to the miggle org
+gcloud iam workload-identity-pools create github-pool --project=$PROJECT --location=global --display-name="GitHub Actions"
+gcloud iam workload-identity-pools providers create-oidc github-provider \
+  --project=$PROJECT --location=global --workload-identity-pool=github-pool \
+  --issuer-uri="https://token.actions.githubusercontent.com" \
+  --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository,attribute.repository_owner=assertion.repository_owner" \
+  --attribute-condition="assertion.repository_owner == 'miggle'"
+
+# Let only this repo impersonate the deploy SA
+gcloud iam service-accounts add-iam-policy-binding $SA --project=$PROJECT \
+  --role=roles/iam.workloadIdentityUser \
+  --member="principalSet://iam.googleapis.com/projects/${NUM}/locations/global/workloadIdentityPools/github-pool/attribute.repository/${REPO}"
 ```
 
-Note: functions runtime reads AWS creds from the shared `miggle-vault` project, so
-the **runtime** service account (`804316033885-compute@developer.gserviceaccount.com`)
-already has Secret Manager Accessor there. The deploy SA above does not need vault access.
+### Deploy SA roles (`ownit-deployer`)
+
+`roles/firebasehosting.admin`, `roles/cloudfunctions.admin`, `roles/run.admin`,
+`roles/firebaserules.admin`, `roles/datastore.indexAdmin`,
+`roles/serviceusage.serviceUsageConsumer`, and `roles/secretmanager.admin`
+(only needed if functions bind local `defineSecret`s — `GITHUB_TOKEN` does).
+Plus `roles/iam.serviceAccountUser` (`actAs`) on **both** the compute and the
+`@appspot` service accounts — Gen 2 deploy runs as the compute SA, and
+firebase-tools preflight-checks the appspot one.
+
+Runtime functions still read AWS creds from the shared `miggle-vault` project; the
+runtime compute SA already has Secret Manager Accessor there (separate from CI).

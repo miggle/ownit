@@ -1,9 +1,5 @@
 name: Deploy Firebase Functions and Firestore
 
-# NOTE: currently fails on push because the CI deploy service account lacks
-# Gen 2 functions roles (cloudfunctions.admin, run.admin, datastore.indexAdmin,
-# secretmanager.admin, iam.serviceAccountUser). Left enabled on purpose as a
-# reminder to grant those roles; functions are deployed manually until then.
 on:
   push:
     branches:
@@ -20,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write # Workload Identity Federation (keyless auth)
 
     steps:
       - name: Checkout
@@ -38,19 +35,13 @@ jobs:
           npm ci
           npm run build
 
-      - name: Setup Firebase CLI
-        run: npm install -g firebase-tools
-
-      - name: Authenticate to Google Cloud
+      - name: Authenticate to Google Cloud (keyless / OIDC)
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-
-      - name: Verify deploy identity
-        run: |
-          echo "Deploying as: $(jq -r .client_email "$GOOGLE_APPLICATION_CREDENTIALS")"
-          echo "Target project: ${{ secrets.FIREBASE_PROJECT_ID }}"
+          workload_identity_provider: projects/804316033885/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: ownit-deployer@ownit-afc0f.iam.gserviceaccount.com
 
       - name: Deploy functions, rules, and indexes
         run: |
-          firebase deploy --only functions,firestore:rules,firestore:indexes --project "${{ secrets.FIREBASE_PROJECT_ID }}" --force
+          npm install -g firebase-tools
+          firebase deploy --only functions,firestore:rules,firestore:indexes --project ownit-afc0f --non-interactive

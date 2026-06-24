@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      checks: write
-      pull-requests: write
+      id-token: write # Workload Identity Federation (keyless auth)
+      pull-requests: write # to comment the preview URL
 
     steps:
       - name: Checkout
@@ -36,10 +36,30 @@ jobs:
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
 
-      - name: Deploy to Firebase Hosting Preview Channel
-        uses: FirebaseExtended/action-hosting-deploy@v0.7.0
+      - name: Authenticate to Google Cloud (keyless / OIDC)
+        uses: google-github-actions/auth@v2
         with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          channelId: pr-${{ github.event.number }}
-          projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
+          workload_identity_provider: projects/804316033885/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: ownit-deployer@ownit-afc0f.iam.gserviceaccount.com
+
+      - name: Deploy to a preview channel
+        id: preview
+        run: |
+          npm install -g firebase-tools
+          URL=$(firebase hosting:channel:deploy "pr-${{ github.event.number }}" \
+            --project ownit-afc0f --expires 7d --json --non-interactive \
+            | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const j=JSON.parse(s);const c=Object.values(j.result)[0];console.log(c.url)})")
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Comment preview URL on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const url = '${{ steps.preview.outputs.url }}';
+            if (!url) return;
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `🔎 Preview deployed: ${url}`,
+            });
