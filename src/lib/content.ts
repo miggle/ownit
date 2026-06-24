@@ -106,7 +106,7 @@ export const pillars = [
 
 export const principles = {
   eyebrow: 'The guiding principles: this is the differentiator',
-  heading: 'The things I always do, so what you build is solid, safe and actually yours.',
+  heading: 'The iterable, repeatable guiding principles I apply to everything I build, so I have consistent ownership and control across everything.',
   intro:
     'This is the part the quick-build tools don’t give you. And it’s the real reason to build this way. Every build follows standards I keep as living docs (my build playbook, my CI/CD standards and my non-functional requirements) that travel with the project, so you, or a future dev team, can see exactly how it was built and run.',
   closing:
