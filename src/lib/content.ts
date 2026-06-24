@@ -259,6 +259,7 @@ export const contribute = {
   success: { title: 'Got it, thank you.', body: 'I read every one.' },
   error: 'Something went wrong sending that. Please try again, or email info@miggle.one.',
   submitting: 'Sending…',
+  publicNote: 'Heads up: suggestions are posted publicly as issues on our GitHub. Leave name and email blank to stay anonymous.',
   fields: {
     idea: 'Your idea or suggestion',
     name: 'Name (optional)',

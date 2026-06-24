@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Container } from './ui';
 import { footer } from '../lib/content';
 import { MIGGLE_URL, PHONE, contactEmail, openMail } from '../lib/site';
@@ -34,13 +35,10 @@ export function Footer() {
             <div className="font-mono text-[12px] uppercase tracking-[0.08em] text-slate-400">Legal</div>
             <ul className="mt-3 space-y-2 text-[15px] text-paper-2/80">
               <li>
-                <a href="/terms" className="transition-colors hover:text-white">Terms</a>
+                <Link to="/terms" className="transition-colors hover:text-white">Terms</Link>
               </li>
               <li>
-                <a href="/privacy" className="transition-colors hover:text-white">Privacy</a>
-              </li>
-              <li>
-                <a href="#" className="transition-colors hover:text-white">Cookie settings</a>
+                <Link to="/privacy" className="transition-colors hover:text-white">Privacy &amp; cookies</Link>
               </li>
             </ul>
           </div>

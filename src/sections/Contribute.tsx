@@ -63,7 +63,8 @@ export function Contribute() {
                   </div>
                 </div>
               </div>
-              {state === 'error' && <p className="mt-4 text-[14px] text-pink-light">{contribute.error}</p>}
+              <p className="mt-4 text-[13px] text-paper-2/50">{contribute.publicNote}</p>
+              {state === 'error' && <p className="mt-3 text-[14px] text-pink-light">{contribute.error}</p>}
               <button type="submit" disabled={state === 'submitting'} className="mt-6 w-full rounded-xl bg-magenta px-6 py-3 font-display text-[16px] font-semibold text-white transition-colors hover:bg-magenta/90 disabled:opacity-60">
                 {state === 'submitting' ? contribute.submitting : contribute.fields.submit}
               </button>
