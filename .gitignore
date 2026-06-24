@@ -22,6 +22,14 @@ ui-debug.log*
 !.env.example
 functions/lib/
 
+# Service-account keys and credentials — NEVER commit these
+*-key.json
+*service-account*.json
+*serviceaccount*.json
+*-deployer-key.json
+gcloud-*.json
+credentials*.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
