@@ -1,4 +1,5 @@
 node_modules/
-lib/
+# Build output only — anchored so it doesn't also ignore src/lib/.
+/lib/
 *.local
 .env
