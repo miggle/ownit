@@ -114,13 +114,13 @@ export const principles = {
 };
 
 export const builtPrinciples = [
-  { lead: 'Build the real product, not a demo shell', desc: 'If you wanted a working tool, that’s what you get.' },
-  { lead: 'Proven architecture', desc: 'React/TypeScript sitting on, my choice, Firebase. But other options are available. Stable and documented, so any developer or agent can pick it up.' },
+  { lead: 'Build the real product, not a demo shell', desc: 'If you want a working tool ready for production, this gets you that.' },
+  { lead: 'Proven architecture', desc: 'React/TypeScript sitting on, my choice, Firebase. (Other options are available.) Stable and documented, so any developer or agent can pick it up.' },
   { lead: 'You own it from day one', desc: 'Your code in your repo, your data in your cloud project. Not rented space inside someone’s platform.' },
-  { lead: 'Your data stays portable', desc: 'Built with an API so your data can be exported and exchanged, not trapped. Plug in other tools, or move on, without a rebuild.' },
+  { lead: 'Your data stays portable', desc: 'All my products have an API layer so data can be exported and exchanged, not trapped. Plug in other tools, be downstream, be upstream, whatever!' },
   { lead: 'Lock the doors server-side', desc: 'Real permission checks live on the server, not just hidden buttons in the browser.' },
   { lead: 'Repeatable, documented setup', desc: 'Scripts and docs instead of secret manual steps, so it can be maintained, moved, or handed over.' },
-  { lead: 'Deployment is part of the build', desc: 'Deploys, previews and updates are wired in, not bolted on at the end.' },
+  { lead: 'Deployment is part of the build', desc: 'Deploys, previews and updates are wired in from early commits, not bolted on at the end.' },
 ];
 
 export const runPrinciples = [
